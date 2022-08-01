@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DesignSurface">
+    <option name="filePathToZoomLevelMap">
+      <map>
+        <entry key="..\:/Users/SHARAD SALODIYA/AndroidStudioProjects/Wallstick/app/src/main/res/drawable/fav_bg.xml" value="0.153" />
+        <entry key="..\:/Users/SHARAD SALODIYA/AndroidStudioProjects/Wallstick/app/src/main/res/drawable/heart_outline.xml" value="0.153" />
+        <entry key="..\:/Users/SHARAD SALODIYA/AndroidStudioProjects/Wallstick/app/src/main/res/drawable/latest_bg.xml" value="0.153" />
+        <entry key="..\:/Users/SHARAD SALODIYA/AndroidStudioProjects/Wallstick/app/src/main/res/drawable/rs_bg.xml" value="0.153" />
+        <entry key="..\:/Users/SHARAD SALODIYA/AndroidStudioProjects/Wallstick/app/src/main/res/drawable/splashscreen_bg.xml" value="0.153" />
+        <entry key="..\:/Users/SHARAD SALODIYA/AndroidStudioProjects/Wallstick/app/src/main/res/drawable/tw_bg.xml" value="0.153" />
+        <entry key="..\:/Users/SHARAD SALODIYA/AndroidStudioProjects/Wallstick/app/src/main/res/layout/activity_category.xml" value="0.2" />
+        <entry key="..\:/Users/SHARAD SALODIYA/AndroidStudioProjects/Wallstick/app/src/main/res/layout/activity_main.xml" value="0.25416666666666665" />
+        <entry key="..\:/Users/SHARAD SALODIYA/AndroidStudioProjects/Wallstick/app/src/main/res/layout/activity_splashscreen.xml" value="0.264" />
+        <entry key="..\:/Users/SHARAD SALODIYA/AndroidStudioProjects/Wallstick/app/src/main/res/layout/fragment_favourite.xml" value="0.20863616930312098" />
+        <entry key="..\:/Users/SHARAD SALODIYA/AndroidStudioProjects/Wallstick/app/src/main/res/layout/fragment_home.xml" value="0.21535745807590467" />
+        <entry key="..\:/Users/SHARAD SALODIYA/AndroidStudioProjects/Wallstick/app/src/main/res/layout/fragment_latest.xml" value="0.264" />
+        <entry key="..\:/Users/SHARAD SALODIYA/AndroidStudioProjects/Wallstick/app/src/main/res/layout/fragment_trending.xml" value="0.19709277469003847" />
+        <entry key="..\:/Users/harshmoradiya/AndroidStudioProjects/Wallstick/app/src/main/res/drawable/custom_splash_screen.xml" value="0.2145" />
+        <entry key="..\:/Users/harshmoradiya/AndroidStudioProjects/Wallstick/app/src/main/res/drawable/ic_splash_screen.xml" value="0.2145" />
+        <entry key="..\:/Users/harshmoradiya/AndroidStudioProjects/Wallstick/app/src/main/res/drawable/splash_screen.xml" value="0.2145" />
+        <entry key="..\:/Users/harshmoradiya/AndroidStudioProjects/Wallstick/app/src/main/res/layout/activity_category.xml" value="0.25" />
+        <entry key="..\:/Users/harshmoradiya/AndroidStudioProjects/Wallstick/app/src/main/res/layout/activity_splashscreen.xml" value="0.25" />
+        <entry key="..\:/Users/harshmoradiya/AndroidStudioProjects/Wallstick/app/src/main/res/layout/fragment_favourite.xml" value="0.25" />
+        <entry key="..\:/Users/harshmoradiya/AndroidStudioProjects/Wallstick/app/src/main/res/layout/fragment_home.xml" value="0.25" />
+        <entry key="..\:/Users/harshmoradiya/AndroidStudioProjects/Wallstick/app/src/main/res/layout/fragment_latest.xml" value="0.25" />
+        <entry key="..\:/Users/harshmoradiya/AndroidStudioProjects/Wallstick/app/src/main/res/layout/fragment_trending.xml" value="0.25" />
+      </map>
+    </option>
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" project-jdk-name="1.8" project-jdk-type="JavaSDK">
+    <output url="file://$PROJECT_DIR$/build/classes" />
+  </component>
+  <component name="ProjectType">
+    <option name="id" value="Android" />
+  </component>
+</project>

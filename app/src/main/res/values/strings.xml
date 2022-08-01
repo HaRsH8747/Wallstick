@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">Wallstick</string>
+    <string name="title">Wallstick 4k wallpaper</string>
+
+    <string name="lw">Latest Wallpaper</string>
+    <string name="l">Latest</string>
+
+    <string name="tw">Trending Wallpaper</string>
+    <string name="t">Trending</string>
+
+    <string name="fav">Favourite</string>
+    <string name="search">Search</string>
+
+    <string name="rs">Rate &amp; Sharer</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>
