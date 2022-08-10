@@ -9,14 +9,15 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.wallstick.adapters.PhotosAdapter
 import com.wallstick.api.RetrofitInstance
 import com.wallstick.database.LatestPhoto
 import com.wallstick.database.PhotoViewModel
-import com.wallstick.databinding.FragmentLatestBinding
+import com.wallstick.database.TrendingPhoto
+import com.wallstick.databinding.FragmentTrendingPhotosBinding
 import com.wallstick.models.pixabay.PixabayResponse
-import com.wallstick.utils.AppPref
 import com.wallstick.utils.Utils
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -25,55 +26,68 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class LatestFragment : Fragment() {
+class TrendingPhotosFragment : Fragment() {
 
-    private lateinit var binding: FragmentLatestBinding
+    private lateinit var binding: FragmentTrendingPhotosBinding
     private lateinit var mPhotoViewModel: PhotoViewModel
-    private var latestPage = 1
-    private var latestPerPage = 20
-    private lateinit var appPref: AppPref
-    private var currentCounter = 20
+    private var page = 1
     private var isFetched = false
-    private var latestPhotos = mutableListOf<LatestPhoto>()
+    private var trendingPhotos = mutableListOf<LatestPhoto>()
     private lateinit var adapter: PhotosAdapter
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?,
     ): View {
-        binding = FragmentLatestBinding.inflate(layoutInflater,container,false)
+        binding = FragmentTrendingPhotosBinding.inflate(layoutInflater)
         mPhotoViewModel = ViewModelProvider(this).get(PhotoViewModel::class.java)
-        adapter = PhotosAdapter(requireContext(),mPhotoViewModel)
-        binding.rvLatest.adapter = adapter
-        appPref = AppPref(requireContext())
-        latestPage = appPref.getInt(AppPref.LATEST_CURRENT_PAGE,1)
-        latestPerPage = appPref.getInt(AppPref.LATEST_CURRENT_PER_PAGE,20)
+        adapter = PhotosAdapter(requireContext(), mPhotoViewModel)
+        binding.rvTrending.adapter = adapter
+        binding.tvTrendingTitle.text = Utils.currentTrendingTag
 
-        Log.d("CLEAR","onCreate page: ${latestPage} $latestPerPage")
+        binding.backBtn.setOnClickListener {
+            findNavController().popBackStack()
+        }
 
-        latestPhotos = mutableListOf<LatestPhoto>()
-        mPhotoViewModel.readAllLatestPhotos.observe(viewLifecycleOwner, Observer{ photo ->
-            if (!isFetched){
-                latestPhotos.addAll(photo)
-            }else{
-                fetchPixabayLatestPhotos(latestPage, latestPerPage)
+        mPhotoViewModel.readAllLatestPhotos.observe(viewLifecycleOwner, Observer { photos ->
+//            mPhotoViewModel.readAllTrendingTag.observe(viewLifecycleOwner,Observer{ tags ->
+//                val tagList = mutableListOf<String>()
+//                for (tag in tags){
+//                    tagList.add(tag.tagText)
+//                }
+//            })
+            for (photo in photos) {
+                val tagString = photo.tagList.split(",")
+//                Log.d("CLEAR","tag is : ${Utils.currentTrendingTag}, photo tag: ${photo.tagList}")
+                if (photo.tagList.contains(Utils.currentTrendingTag)) {
+                    Log.d("CLEAR", "tag photo: ${photo}")
+                    trendingPhotos.add(photo)
+                }
+//                for (i in tagString){
+//                    if (tagList.contains(i.trim())){
+//                        break
+//                    }
+//                }
+                //                LatestPhotos.addAll(photos)
             }
-            if (photo.isEmpty()){
+
+            if (trendingPhotos.isEmpty()) {
 //                Log.d("CLEAR","Null or Empty")
-                fetchPixabayLatestPhotos(latestPage, latestPerPage)
-            }else{
+                fetchPixabayTrendingPhotos(page, 200)
+                page++
+            } else {
 //                val currentPhotoList = photo.take(currentCounter)
 //                Log.d("CLEAR","viewModel: ${photo.size}")
-                adapter.setData(photo,false)
+                adapter.setData(trendingPhotos, false)
             }
             mPhotoViewModel.readAllLatestPhotos.removeObservers(viewLifecycleOwner)
         })
 
-        binding.rvLatest.addOnScrollListener(object: RecyclerView.OnScrollListener(){
+
+        binding.rvTrending.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
-                if(!recyclerView.canScrollVertically(1)){
+                if (!recyclerView.canScrollVertically(1)) {
                     binding.progressCircular.visibility = View.VISIBLE
 //                    if (mPhotoViewModel.readAllData.value?.size!! > currentCounter){
 //                        currentCounter += 20
@@ -82,41 +96,39 @@ class LatestFragment : Fragment() {
 //                        binding.progressCircular.visibility = View.GONE
 //                    }else{
 //                    }
-                        latestPage = appPref.getInt(AppPref.LATEST_CURRENT_PAGE,1) + 1
-                        latestPerPage = appPref.getInt(AppPref.LATEST_CURRENT_PER_PAGE,20)
 //                        Log.d("CLEAR","nested page: ${latestPage} $latestPerPage")
-                        fetchPixabayLatestPhotos(latestPage,latestPerPage)
+                    fetchPixabayTrendingPhotos(page, 200)
+                    page++
+                    Log.d("CLEAR", "Tage Page: ${page}")
                 }
             }
         })
-
-//        binding.svNested.setOnScrollChangeListener { v, scrollX, scrollY, oldScrollX, oldScrollY ->
-//            val svNested = v as NestedScrollView
-//            if (scrollY == svNested.getChildAt(0).measuredHeight - svNested.measuredHeight){
-//
-//            }
-//        }
 
         return binding.root
     }
 
     @OptIn(DelicateCoroutinesApi::class)
-    private fun fetchPixabayLatestPhotos(page: Int, perPage: Int) {
+    private fun fetchPixabayTrendingPhotos(page: Int, perPage: Int) {
         val pixabayAPI = RetrofitInstance.apiPixabay
         GlobalScope.launch {
 //            pixabayResult = pixabayAPI.getPhotos()
-            pixabayAPI.getPhotos(order = "latest", page = page, per_page = perPage).enqueue(object :
+            pixabayAPI.getSearchedPhotos(
+                q = Utils.currentTrendingTag,
+                page = page,
+                per_page = perPage,
+            ).enqueue(object :
                 Callback<PixabayResponse> {
-                override fun onResponse(call: Call<PixabayResponse>, response: Response<PixabayResponse>) {
-                    if(response.body() != null){
-                        appPref.setInt(AppPref.LATEST_CURRENT_PAGE,page)
-                        appPref.setInt(AppPref.LATEST_CURRENT_PER_PAGE,perPage)
+                override fun onResponse(
+                    call: Call<PixabayResponse>,
+                    response: Response<PixabayResponse>,
+                ) {
+                    if (response.body() != null) {
                         binding.progressCircular.visibility = View.GONE
                         Utils.pixabayResponse = response.body()!!
-                        Log.d("CLEAR","Pixabay Response: ${Utils.pixabayResponse.total}")
+                        Log.d("CLEAR", "Pixabay Response: ${Utils.pixabayResponse.total}")
                         insertPixabayResponseToDatabase(
-                            isLatest = true,
-                            isTrending = false,
+                            isLatest = false,
+                            isTrending = true,
                             isFavourite = false
                         )
 //                        if (!isDatabaseBusy.value!!){
@@ -134,16 +146,22 @@ class LatestFragment : Fragment() {
 //                        }
                     }
                 }
+
                 override fun onFailure(call: Call<PixabayResponse>, t: Throwable) {
-                    Log.d("CLEAR","MainActivity: ${t.message}")
-                    Toast.makeText(requireContext(),"Unable to fetch data!", Toast.LENGTH_SHORT).show()
+                    Log.d("CLEAR", "MainActivity: ${t.message}")
+                    Toast.makeText(requireContext(), "Unable to fetch data!", Toast.LENGTH_SHORT)
+                        .show()
                 }
             })
         }
     }
 
-    fun insertPixabayResponseToDatabase(isLatest: Boolean, isTrending: Boolean, isFavourite: Boolean){
-        for (item in Utils.pixabayResponse.hits){
+    fun insertPixabayResponseToDatabase(
+        isLatest: Boolean,
+        isTrending: Boolean,
+        isFavourite: Boolean,
+    ) {
+        for (item in Utils.pixabayResponse.hits) {
             val latestPhoto = LatestPhoto(
                 photoId = item.id.toLong(),
                 previewUrl = item.previewURL,
@@ -152,11 +170,11 @@ class LatestFragment : Fragment() {
                 isLatest = isLatest,
                 isTrending = isTrending,
                 tagList = item.tags)
-            latestPhotos.add(latestPhoto)
+            trendingPhotos.add(latestPhoto)
             mPhotoViewModel.addLatestPhoto(latestPhoto)
         }
-        adapter.setData(latestPhotos, false)
+        adapter.setData(trendingPhotos, false)
+
 //        isDatabaseBusy.postValue(false)
     }
 }
-

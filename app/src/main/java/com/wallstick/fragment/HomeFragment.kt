@@ -20,9 +20,9 @@ class HomeFragment : Fragment() {
     ): View {
         binding = FragmentHomeBinding.inflate(layoutInflater,container,false)
 
-        binding.lsBtn.setOnClickListener { v -> findNavController(v).navigate(R.id.action_homeFragment2_to_latestFragment) }
-        binding.twBtn.setOnClickListener { v -> findNavController(v).navigate(R.id.action_homeFragment2_to_trendingFragment) }
-        binding.favBtn.setOnClickListener { v -> findNavController(v).navigate(R.id.action_homeFragment2_to_favouriteFragment) }
+        binding.lsBtn.setOnClickListener { v -> findNavController(v).navigate(HomeFragmentDirections.actionHomeFragment2ToWallpaperFragment(0)) }
+        binding.twBtn.setOnClickListener { v -> findNavController(v).navigate(HomeFragmentDirections.actionHomeFragment2ToWallpaperFragment(1)) }
+        binding.favBtn.setOnClickListener { v -> findNavController(v).navigate(HomeFragmentDirections.actionHomeFragment2ToWallpaperFragment(2)) }
 
         return binding.root
     }

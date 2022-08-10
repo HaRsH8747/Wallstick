@@ -5,13 +5,19 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
 import com.wallstick.R
+import com.wallstick.adapters.PhotosAdapter
+import com.wallstick.database.PhotoViewModel
 import com.wallstick.databinding.FragmentFavouriteBinding
 
 class FavouriteFragment : Fragment() {
 
     private lateinit var binding: FragmentFavouriteBinding
+    private lateinit var mPhotoViewModel: PhotoViewModel
+    private lateinit var adapter: PhotosAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -19,24 +25,33 @@ class FavouriteFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentFavouriteBinding.inflate(layoutInflater,container,false)
-        binding.searchView.setOnClickListener{
-            if (binding.etSearch.visibility== View.VISIBLE){
-                binding.etSearch.text.clear()
-                binding.searchView.setImageResource(R.drawable.search)
-                binding.tvTitle.visibility= View.VISIBLE
-                binding.etSearch.visibility= View.GONE
-            }else{
-                binding.tvTitle.visibility= View.GONE
-                binding.etSearch.visibility= View.VISIBLE
-                binding.searchView.setImageResource(R.drawable.close)
+        mPhotoViewModel = ViewModelProvider(this).get(PhotoViewModel::class.java)
 
-            }
-        }
-
-        binding.backBtn.setOnClickListener { v -> Navigation.findNavController(v).popBackStack()}
+        adapter = PhotosAdapter(requireContext(),mPhotoViewModel)
+        binding.rvLatest.adapter = adapter
+//        if (mPhotoViewModel.readFavourites.value!!.isEmpty()){
+//            binding.tvEmpty.visibility = View.VISIBLE
+//        }else{
+//            binding.tvEmpty.visibility = View.GONE
+//            adapter.setData(mPhotoViewModel.readFavourites.value!!)
+//        }
 
 
         return binding.root
+    }
+
+    override fun onResume() {
+        super.onResume()
+        mPhotoViewModel.readFavourites.observe(this,Observer{
+            if (it.isEmpty()){
+                binding.rvLatest.visibility = View.GONE
+                binding.tvEmpty.visibility = View.VISIBLE
+            }else{
+                binding.rvLatest.visibility = View.VISIBLE
+                binding.tvEmpty.visibility = View.GONE
+                adapter.setData(it, false)
+            }
+        })
     }
 
 }

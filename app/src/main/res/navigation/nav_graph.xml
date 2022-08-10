@@ -10,40 +10,53 @@
         android:label="fragment_home"
         tools:layout="@layout/fragment_home" >
         <action
-            android:id="@+id/action_homeFragment2_to_latestFragment"
-            app:destination="@id/latestFragment"
-            app:enterAnim="@anim/slide_in_right"
-            app:exitAnim="@anim/slide_out_left"
-            app:popEnterAnim="@anim/slide_in_left"
-            app:popExitAnim="@anim/slide_out_right" />
-        <action
-            android:id="@+id/action_homeFragment2_to_trendingFragment"
-            app:destination="@id/trendingFragment"
-            app:enterAnim="@anim/slide_in_right"
-            app:exitAnim="@anim/slide_out_left"
-            app:popEnterAnim="@anim/slide_in_left"
-            app:popExitAnim="@anim/slide_out_right" />
-        <action
-            android:id="@+id/action_homeFragment2_to_favouriteFragment"
-            app:destination="@id/favouriteFragment"
+            android:id="@+id/action_homeFragment2_to_wallpaperFragment"
+            app:destination="@id/wallpaperFragment"
             app:enterAnim="@anim/slide_in_right"
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_in_left"
             app:popExitAnim="@anim/slide_out_right" />
     </fragment>
     <fragment
-        android:id="@+id/latestFragment"
-        android:name="com.wallstick.fragment.LatestFragment"
-        android:label="fragment_latest"
-        tools:layout="@layout/fragment_latest" />
+        android:id="@+id/wallpaperFragment"
+        android:name="com.wallstick.fragment.WallpaperFragment"
+        android:label="WallpaperFragment"
+        tools:layout="@layout/fragment_wallpaper">
+        <argument
+            android:name="index"
+            app:argType="integer"
+            android:defaultValue="0" />
+        <action
+            android:id="@+id/action_wallpaperFragment_to_setWallpaper"
+            app:destination="@id/setWallpaper"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+        <action
+            android:id="@+id/action_wallpaperFragment_to_trendingPhotosFragment"
+            app:destination="@id/trendingPhotosFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+    </fragment>
     <fragment
-        android:id="@+id/trendingFragment"
-        android:name="com.wallstick.fragment.TrendingFragment"
-        android:label="fragment_trending"
-        tools:layout="@layout/fragment_trending" />
+        android:id="@+id/setWallpaper"
+        android:name="com.wallstick.fragment.SetWallpaper"
+        android:label="fragment_set_wallpaper"
+        tools:layout="@layout/fragment_set_wallpaper" />
     <fragment
-        android:id="@+id/favouriteFragment"
-        android:name="com.wallstick.fragment.FavouriteFragment"
-        android:label="fragment_favourite"
-        tools:layout="@layout/fragment_favourite" />
+        android:id="@+id/trendingPhotosFragment"
+        android:name="com.wallstick.fragment.TrendingPhotosFragment"
+        android:label="TrendingPhotosFragment"
+        tools:layout="@layout/fragment_trending_photos">
+        <action
+            android:id="@+id/action_trendingPhotosFragment_to_setWallpaper"
+            app:destination="@id/setWallpaper"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+    </fragment>
 </navigation>

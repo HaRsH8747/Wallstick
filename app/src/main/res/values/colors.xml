@@ -8,4 +8,6 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="gary">#996A6A68</color>
+
+    <color name="fab_background">#2CCCE1</color>
 </resources>

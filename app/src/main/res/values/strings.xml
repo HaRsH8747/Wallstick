@@ -8,10 +8,31 @@
     <string name="tw">Trending Wallpaper</string>
     <string name="t">Trending</string>
 
+    <string name="fw">Favourite Wallpaper</string>
+
+    <string name="se">Search Wallpaper</string>
+
     <string name="fav">Favourite</string>
     <string name="search">Search</string>
 
-    <string name="rs">Rate &amp; Sharer</string>
+    <string name="rs">Rate &amp; Share</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="wallpaper_image">Wallpaper Image</string>
+    <string name="no_favourite_item">No Favourite Item</string>
+    <string name="set_wallpaper">Set Wallpaper</string>
+    <string name="floating_button">Floating Button</string>
+    <string name="full_image">Full Image</string>
+    <string name="animal">Animal</string>
+    <string name="wallpaper_category">Wallpaper Category</string>
+    <string name="nature">Nature</string>
+    <string name="cancel">Cancel</string>
+    <string name="set">Set</string>
+    <string name="set_as_home_screen">Set as Home Screen</string>
+    <string name="set_as_lock_screen">Set as Lock Screen</string>
+    <string name="set_as_both">Set as Both</string>
+    <string name="set_wallpaper_as">Set Wallpaper as?</string>
+    <string name="home_screen">Home Screen</string>
+    <string name="lock_screen">Lock Screen</string>
+    <string name="both">Both</string>
 </resources>
