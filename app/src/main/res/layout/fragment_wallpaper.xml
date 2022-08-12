@@ -86,6 +86,7 @@
         app:layout_constraintTop_toBottomOf="@+id/constraintLayout"
         app:tabIndicatorColor="@color/black"
         app:tabSelectedTextColor="@color/black"
+        app:tabTextAppearance="@style/MineCustomTabText"
         app:tabTextColor="@color/gary">
 
         <com.google.android.material.tabs.TabItem
@@ -102,6 +103,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/fav" />
+
+<!--        <com.google.android.material.tabs.TabItem-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:text="@string/search" />-->
     </com.google.android.material.tabs.TabLayout>
 
     <androidx.viewpager2.widget.ViewPager2
@@ -113,6 +119,17 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tabLayout" />
+
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/fvSearch"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="5dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/constraintLayout" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

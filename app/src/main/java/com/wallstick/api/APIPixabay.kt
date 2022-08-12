@@ -1,6 +1,7 @@
 package com.wallstick.api
 
 import com.wallstick.models.pixabay.PixabayResponse
+import com.wallstick.utils.Utils
 import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Query
@@ -11,7 +12,7 @@ interface APIPixabay {
     @GET("api/")
     fun getPhotos(
         @Query("key")
-        key: String = "28969364-4e6b8a55dfe6ee95f52c14af7",
+        key: String = Utils.API_KEY,
         @Query("orientation")
         orientation: String = "vertical",
         @Query("per_page")
@@ -31,7 +32,7 @@ interface APIPixabay {
     @GET("api/")
     fun getSearchedPhotos(
         @Query("key")
-        key: String = "28969364-4e6b8a55dfe6ee95f52c14af7",
+        key: String = Utils.API_KEY,
         @Query("q")
         q: String,
         @Query("orientation")

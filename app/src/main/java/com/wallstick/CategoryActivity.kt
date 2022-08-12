@@ -1,16 +1,29 @@
 package com.wallstick
 
+import android.app.Dialog
+import android.content.Context
+import android.content.Intent
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
+import com.airbnb.lottie.LottieAnimationView
+import com.google.android.material.snackbar.Snackbar
 import com.wallstick.api.RetrofitInstance
 import com.wallstick.database.LatestPhoto
 import com.wallstick.database.PhotoViewModel
+import com.wallstick.databinding.ActivityCategoryBinding
 import com.wallstick.models.flickr.FlickrResponse
 import com.wallstick.models.pixabay.PixabayResponse
+import com.wallstick.utils.AppPref
+import com.wallstick.utils.ConnectionLiveData
 import com.wallstick.utils.Utils
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -21,15 +34,23 @@ import retrofit2.Response
 
 class CategoryActivity : AppCompatActivity() {
 
-    private lateinit var flickrResult: Call<FlickrResponse>
-    private lateinit var pixabayResult: Call<PixabayResponse>
-    private lateinit var mPhotoViewModel: PhotoViewModel
-    private var isDatabaseBusy = MutableLiveData<Boolean>(false)
+//    private lateinit var flickrResult: Call<FlickrResponse>
+//    private lateinit var pixabayResult: Call<PixabayResponse>
+//    private lateinit var mPhotoViewModel: PhotoViewModel
+//    private var isDatabaseBusy = MutableLiveData<Boolean>(false)
+    private lateinit var binding: ActivityCategoryBinding
+    private lateinit var snackbar: Snackbar
+    private lateinit var connectionLiveData: ConnectionLiveData
+    private lateinit var appPref: AppPref
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        binding = ActivityCategoryBinding.inflate(layoutInflater)
         setTheme(R.style.Theme_Wallstick)
-        setContentView(R.layout.activity_category)
+        setContentView(binding.root)
+//        addNetworkListener()
+        appPref = AppPref(this)
+//        snackbar = Snackbar.make(binding.root,"You are offline, Please turn on the internet to get full experience",Snackbar.LENGTH_LONG)
 
 //        mPhotoViewModel = ViewModelProvider(this).get(PhotoViewModel::class.java)
 //        mPhotoViewModel.readAllData.observe(this, Observer{ photo ->
@@ -38,6 +59,23 @@ class CategoryActivity : AppCompatActivity() {
 //                fetchPixabayLatestPhotos()
 //            }
 //        })
+    }
+
+    private fun addNetworkListener(){
+        connectionLiveData= ConnectionLiveData(application)
+        connectionLiveData.observe(this) { isAvailable ->
+            when (isAvailable) {
+                true -> {
+//                    snackbar.dismiss()
+                    if (appPref.getBoolean(AppPref.IS_FIRST_OPEN,true)){
+                        appPref.setBoolean(AppPref.IS_FIRST_OPEN,false)
+                    }
+                }
+                false -> {
+//                    snackbar.show()
+                }
+            }
+        }
     }
 
 //    @OptIn(DelicateCoroutinesApi::class)

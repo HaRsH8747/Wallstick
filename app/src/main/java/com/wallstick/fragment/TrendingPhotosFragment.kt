@@ -41,7 +41,7 @@ class TrendingPhotosFragment : Fragment() {
     ): View {
         binding = FragmentTrendingPhotosBinding.inflate(layoutInflater)
         mPhotoViewModel = ViewModelProvider(this).get(PhotoViewModel::class.java)
-        adapter = PhotosAdapter(requireContext(), mPhotoViewModel)
+        adapter = PhotosAdapter(requireContext(), mPhotoViewModel, false)
         binding.rvTrending.adapter = adapter
         binding.tvTrendingTitle.text = Utils.currentTrendingTag
 
@@ -49,7 +49,7 @@ class TrendingPhotosFragment : Fragment() {
             findNavController().popBackStack()
         }
 
-        mPhotoViewModel.readAllLatestPhotos.observe(viewLifecycleOwner, Observer { photos ->
+        mPhotoViewModel.readAllPhotos.observe(viewLifecycleOwner, Observer { photos ->
 //            mPhotoViewModel.readAllTrendingTag.observe(viewLifecycleOwner,Observer{ tags ->
 //                val tagList = mutableListOf<String>()
 //                for (tag in tags){
@@ -82,7 +82,6 @@ class TrendingPhotosFragment : Fragment() {
             }
             mPhotoViewModel.readAllLatestPhotos.removeObservers(viewLifecycleOwner)
         })
-
 
         binding.rvTrending.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
@@ -164,7 +163,7 @@ class TrendingPhotosFragment : Fragment() {
         for (item in Utils.pixabayResponse.hits) {
             val latestPhoto = LatestPhoto(
                 photoId = item.id.toLong(),
-                previewUrl = item.previewURL,
+                previewUrl = item.webformatURL,
                 originalUrl = item.largeImageURL,
                 isFavourite = isFavourite,
                 isLatest = isLatest,

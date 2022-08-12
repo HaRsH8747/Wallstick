@@ -10,6 +10,7 @@ import kotlinx.coroutines.launch
 class PhotoViewModel(application: Application): AndroidViewModel(application) {
 
     val readAllLatestPhotos: LiveData<List<LatestPhoto>>
+    val readAllPhotos: LiveData<List<LatestPhoto>>
 //    val readAllTrendingPhotos: LiveData<List<TrendingPhoto>>
     val readFavourites: LiveData<List<LatestPhoto>>
     val readAllTrendingTag: LiveData<List<TrendingTag>>
@@ -19,6 +20,7 @@ class PhotoViewModel(application: Application): AndroidViewModel(application) {
         val photoDao = PhotosDatabase.getDatabase(application).photoDao()
         repository = PhotoRepository(photoDao)
         readAllLatestPhotos = repository.readAllLatestPhotos
+        readAllPhotos = repository.readAllPhotos
 //        readAllTrendingPhotos = repository.readAllTrendingPhotos
         readFavourites = repository.readFavourites
         readAllTrendingTag = repository.readAllTrendingTag

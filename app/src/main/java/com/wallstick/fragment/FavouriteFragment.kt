@@ -27,7 +27,7 @@ class FavouriteFragment : Fragment() {
         binding = FragmentFavouriteBinding.inflate(layoutInflater,container,false)
         mPhotoViewModel = ViewModelProvider(this).get(PhotoViewModel::class.java)
 
-        adapter = PhotosAdapter(requireContext(),mPhotoViewModel)
+        adapter = PhotosAdapter(requireContext(),mPhotoViewModel, true)
         binding.rvLatest.adapter = adapter
 //        if (mPhotoViewModel.readFavourites.value!!.isEmpty()){
 //            binding.tvEmpty.visibility = View.VISIBLE

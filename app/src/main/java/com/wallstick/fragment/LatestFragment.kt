@@ -35,7 +35,9 @@ class LatestFragment : Fragment() {
     private var currentCounter = 20
     private var isFetched = false
     private var latestPhotos = mutableListOf<LatestPhoto>()
-    private lateinit var adapter: PhotosAdapter
+    companion object{
+    }
+    lateinit var adapter: PhotosAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -44,7 +46,7 @@ class LatestFragment : Fragment() {
     ): View {
         binding = FragmentLatestBinding.inflate(layoutInflater,container,false)
         mPhotoViewModel = ViewModelProvider(this).get(PhotoViewModel::class.java)
-        adapter = PhotosAdapter(requireContext(),mPhotoViewModel)
+        adapter = PhotosAdapter(requireContext(),mPhotoViewModel, false)
         binding.rvLatest.adapter = adapter
         appPref = AppPref(requireContext())
         latestPage = appPref.getInt(AppPref.LATEST_CURRENT_PAGE,1)
@@ -69,6 +71,8 @@ class LatestFragment : Fragment() {
             }
             mPhotoViewModel.readAllLatestPhotos.removeObservers(viewLifecycleOwner)
         })
+
+        binding.rvLatest.computeVerticalScrollOffset()
 
         binding.rvLatest.addOnScrollListener(object: RecyclerView.OnScrollListener(){
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
@@ -98,6 +102,16 @@ class LatestFragment : Fragment() {
 //        }
 
         return binding.root
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Log.d("CLEAR","inside Resume")
+//        if(Utils.isFavouriteUpdated){
+//            Log.d("CLEAR","favourite changed")
+//            adapter.notifyItemChanged(Utils.currentLatestPhotoIndex)
+//            Utils.isFavouriteUpdated = false
+//        }
     }
 
     @OptIn(DelicateCoroutinesApi::class)
@@ -146,7 +160,7 @@ class LatestFragment : Fragment() {
         for (item in Utils.pixabayResponse.hits){
             val latestPhoto = LatestPhoto(
                 photoId = item.id.toLong(),
-                previewUrl = item.previewURL,
+                previewUrl = item.webformatURL,
                 originalUrl = item.largeImageURL,
                 isFavourite = isFavourite,
                 isLatest = isLatest,

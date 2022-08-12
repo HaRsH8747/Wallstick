@@ -29,11 +29,13 @@
         <entry key="..\:/Users/harshmoradiya/AndroidStudioProjects/Wallstick/app/src/main/res/layout/fragment_home.xml" value="0.25" />
         <entry key="..\:/Users/harshmoradiya/AndroidStudioProjects/Wallstick/app/src/main/res/layout/fragment_latest.xml" value="0.25" />
         <entry key="..\:/Users/harshmoradiya/AndroidStudioProjects/Wallstick/app/src/main/res/layout/fragment_search.xml" value="0.25" />
-        <entry key="..\:/Users/harshmoradiya/AndroidStudioProjects/Wallstick/app/src/main/res/layout/fragment_set_wallpaper.xml" value="0.25" />
+        <entry key="..\:/Users/harshmoradiya/AndroidStudioProjects/Wallstick/app/src/main/res/layout/fragment_set_wallpaper.xml" value="0.264" />
         <entry key="..\:/Users/harshmoradiya/AndroidStudioProjects/Wallstick/app/src/main/res/layout/fragment_trending.xml" value="0.25" />
         <entry key="..\:/Users/harshmoradiya/AndroidStudioProjects/Wallstick/app/src/main/res/layout/fragment_trending_photos.xml" value="0.25" />
-        <entry key="..\:/Users/harshmoradiya/AndroidStudioProjects/Wallstick/app/src/main/res/layout/fragment_wallpaper.xml" value="0.25" />
+        <entry key="..\:/Users/harshmoradiya/AndroidStudioProjects/Wallstick/app/src/main/res/layout/fragment_wallpaper.xml" value="0.264" />
+        <entry key="..\:/Users/harshmoradiya/AndroidStudioProjects/Wallstick/app/src/main/res/layout/network_off_dialog.xml" value="0.25" />
         <entry key="..\:/Users/harshmoradiya/AndroidStudioProjects/Wallstick/app/src/main/res/layout/photo_item.xml" value="0.264" />
+        <entry key="..\:/Users/harshmoradiya/AndroidStudioProjects/Wallstick/app/src/main/res/layout/progress_circular.xml" value="0.25" />
         <entry key="..\:/Users/harshmoradiya/AndroidStudioProjects/Wallstick/app/src/main/res/layout/trending_item.xml" value="0.2600513259195894" />
         <entry key="..\:/Users/harshmoradiya/AndroidStudioProjects/Wallstick/app/src/main/res/layout/wallpaper_type_dialog.xml" value="0.25" />
       </map>

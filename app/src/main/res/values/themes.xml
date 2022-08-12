@@ -21,6 +21,14 @@
         <!-- Customize your theme here. -->
     </style>
 
+    <style name="WhiteAccentProgressBar">
+        <item name="colorAccent">@color/white</item> <!-- Whatever color you want-->
+    </style>
+
+    <style name="MineCustomTabText" parent="TextAppearance.Design.Tab">
+        <item name="android:textSize">16sp</item>
+    </style>
+
     //for dialog
     <style name="alertDialog" parent="@style/ThemeOverlay.MaterialComponents.MaterialAlertDialog">
         <item name="android:background">@color/white</item>

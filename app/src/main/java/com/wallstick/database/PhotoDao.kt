@@ -18,8 +18,11 @@ interface PhotoDao {
     @Update
     suspend fun updateLatestPhoto(latestPhoto: LatestPhoto)
 
-    @Query("SELECT * FROM latest_photo_table")
+    @Query("SELECT * FROM latest_photo_table WHERE isLatest = 1")
     fun readAllLatestPhotos(): LiveData<List<LatestPhoto>>
+
+    @Query("SELECT * FROM latest_photo_table")
+    fun readAllPhotos(): LiveData<List<LatestPhoto>>
 
 //    @Query("SELECT * FROM trending_photo_table")
 //    fun readAllTrendingPhotos(): LiveData<List<TrendingPhoto>>

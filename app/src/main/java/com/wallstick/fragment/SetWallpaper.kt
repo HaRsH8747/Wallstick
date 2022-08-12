@@ -1,19 +1,28 @@
 package com.wallstick.fragment
 
 import android.Manifest
+import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+import android.app.Activity
+import android.app.Dialog
 import android.app.WallpaperManager
 import android.content.ContentValues
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.graphics.Point
 import android.graphics.Rect
+import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
+import android.provider.Settings
+import android.text.format.DateFormat
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -22,41 +31,55 @@ import android.view.animation.AnimationUtils
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.ListFragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.snackbar.Snackbar
+import com.wallstick.BuildConfig
 import com.wallstick.R
+import com.wallstick.adapters.PhotosAdapter
 import com.wallstick.database.LatestPhoto
 import com.wallstick.database.PhotoViewModel
 import com.wallstick.databinding.FragmentSetWallpaperBinding
 import com.wallstick.databinding.WallpaperTypeDialogBinding
 import com.wallstick.utils.Utils
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import pub.devrel.easypermissions.EasyPermissions
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.OutputStream
+import java.util.*
 
 
 class SetWallpaper : Fragment(){
 
     private lateinit var binding: FragmentSetWallpaperBinding
-    private val rotateOpen: Animation by lazy { AnimationUtils.loadAnimation(requireContext(),R.anim.rotate_open_anim) }
+    private val rotateOpen: Animation by lazy { AnimationUtils.loadAnimation(requireContext(), R.anim.rotate_open_anim) }
     private val rotateClose: Animation by lazy { AnimationUtils.loadAnimation(requireContext(),R.anim.rotate_close_anim) }
     private val fromBottom: Animation by lazy { AnimationUtils.loadAnimation(requireContext(),R.anim.from_bottom_anim) }
     private val toBottom: Animation by lazy { AnimationUtils.loadAnimation(requireContext(),R.anim.to_bottom_anim) }
     private var clicked = false
     private lateinit var mPhotoViewModel: PhotoViewModel
     private lateinit var currentPhoto: LatestPhoto
-    private var isReadPermissionGranted = false
+//    private var isReadPermissionGranted = false
     private var isWritePermissionGranted = false
-    private lateinit var permissionLauncher: ActivityResultLauncher<Array<String>>
+    private lateinit var permissionLauncher: ActivityResultLauncher<String>
     private lateinit var bitmap: Bitmap
+    private var file: String = ""
+    private lateinit var progressDialog: Dialog
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -65,13 +88,47 @@ class SetWallpaper : Fragment(){
         // Inflate the layout for this fragment
         binding = FragmentSetWallpaperBinding.inflate(layoutInflater)
         mPhotoViewModel = ViewModelProvider(this).get(PhotoViewModel::class.java)
-        currentPhoto = Utils.currentLatestPhoto
-        permissionLauncher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()){ permissions ->
-            isReadPermissionGranted = permissions[Manifest.permission.READ_EXTERNAL_STORAGE] ?: isReadPermissionGranted
-            isWritePermissionGranted = permissions[Manifest.permission.WRITE_EXTERNAL_STORAGE] ?: isWritePermissionGranted
+        currentPhoto = Utils.currentPhoto
+        progressDialog = Dialog(requireContext())
+        progressDialog.setContentView(R.layout.progress_circular)
+        progressDialog.setCancelable(false)
+        progressDialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        val isWritePermission = ContextCompat.checkSelfPermission(
+            requireContext(),
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+        ) == PackageManager.PERMISSION_GRANTED
+        isWritePermissionGranted = isWritePermission || sdkCheck()
+        permissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()){ permissions ->
+//            isReadPermissionGranted = permissions[Manifest.permission.READ_EXTERNAL_STORAGE] ?: isReadPermissionGranted
+            if (permissions){
+                isWritePermissionGranted = true
+            }else{
+                if (ActivityCompat.shouldShowRequestPermissionRationale(requireActivity(), WRITE_EXTERNAL_STORAGE)) {
+//                    requestPermission()
+                } else {
+                    //display error dialog
+                    val snackbar = Snackbar.make(requireView(),
+                        "Storage Permission is required to store Image to the gallery",
+                        Snackbar.LENGTH_LONG)
+                    snackbar.setAction("Permission Snackbar",
+                        View.OnClickListener {
+                            if (activity == null) {
+                                return@OnClickListener
+                            }
+                            val intent = Intent()
+                            intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+                            val uri = Uri.fromParts("package", requireActivity().packageName, null)
+                            intent.data = uri
+                            this.startActivity(intent)
+                        })
+                    snackbar.show()
+                }
+            }
+//            isWritePermissionGranted = permissions[Manifest.permission.WRITE_EXTERNAL_STORAGE] ?: isWritePermissionGranted
         }
         binding.backBtn.setOnClickListener {
             findNavController().popBackStack()
+            deletePhotoFromInternalStorage(file)
         }
 
         if (currentPhoto.isFavourite){
@@ -80,12 +137,15 @@ class SetWallpaper : Fragment(){
             binding.fabFav.setImageResource(R.drawable.ic_fab_fav)
         }
 
+        binding.lavImageLoading.playAnimation()
         Glide.with(requireContext())
             .asBitmap()
             .load(currentPhoto.originalUrl)
             .into(object: CustomTarget<Bitmap>() {
                 override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
                     bitmap = resource
+                    binding.lavImageLoading.pauseAnimation()
+                    binding.lavImageLoading.visibility = View.GONE
                     binding.ivWallpaper.setImageBitmap(resource)
                 }
 
@@ -102,12 +162,12 @@ class SetWallpaper : Fragment(){
 
         binding.fabFav.setOnClickListener {
             if (currentPhoto.isFavourite){
+                toggleFavourite(currentPhoto,false)
                 binding.fabFav.setImageResource(R.drawable.ic_fab_fav)
             }else{
+                toggleFavourite(currentPhoto,true)
                 binding.fabFav.setImageResource(R.drawable.ic_fab_filled_heart)
             }
-            currentPhoto.isFavourite = !currentPhoto.isFavourite
-            toggleFavourite(currentPhoto)
         }
         binding.fabWallpaper.setOnClickListener {
             showDialogForWallpaper()
@@ -117,17 +177,99 @@ class SetWallpaper : Fragment(){
                 saveImageToExternalStorage(bitmap)
             }else{
                 if (!isWritePermissionGranted){
+                    Log.d("CLEAR","No Write")
                     requestPermission()
                 }else{
+                    Log.d("CLEAR","Is Write")
                     saveImageToExternalStorage(bitmap)
                 }
             }
         }
         binding.fabShare.setOnClickListener {
-
+            progressDialog.show()
+            lifecycleScope.launch{
+                shareImage()
+            }
         }
 
         return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        if (file.isNotEmpty()){
+            try {
+                deletePhotoFromInternalStorage(file)
+            }catch (e: IOException){
+                e.printStackTrace()
+            }
+        }
+    }
+
+    var resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode != Activity.RESULT_OK) {
+            deletePhotoFromInternalStorage(file)
+        }
+    }
+
+    private suspend fun shareImage() {
+        withContext(Dispatchers.IO){
+            val date = Date()
+            val format: String = DateFormat.format("MM-dd-yyyy_hh:mm:ss", date).toString()
+            savePhotoToInternalStorage(format,bitmap)
+        }
+    }
+
+    private fun deletePhotoFromInternalStorage(filename: String): Boolean {
+        return try {
+            val dir: File = requireContext().filesDir
+            val file = File(dir, filename)
+            file.delete()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+    }
+
+    private suspend fun savePhotoToInternalStorage(filename: String, bmp: Bitmap) {
+        withContext(Dispatchers.IO){
+            try {
+                requireContext().openFileOutput("$filename.jpg", AppCompatActivity.MODE_PRIVATE).use { stream ->
+                    if (!bmp.compress(Bitmap.CompressFormat.PNG,100,stream)){
+                        progressDialog.dismiss()
+                        throw IOException("Couldn't save Image")
+                    }
+                    loadPhotoFromInternalStorage(filename)
+                }
+            }catch (e: Exception){
+                e.printStackTrace()
+                progressDialog.dismiss()
+                Log.d("CLEAR","msg: ${e.message}")
+            }
+        }
+    }
+
+    private suspend fun loadPhotoFromInternalStorage(fileName: String){
+        try {
+            withContext(Dispatchers.IO){
+                val files = requireContext().filesDir.listFiles()
+                files?.filter { it.canRead() && it.isFile && it.name.endsWith(".jpg") && it.name.equals("$fileName.jpg") }?.map {
+                    val photoUri = FileProvider.getUriForFile(requireContext(), "${BuildConfig.APPLICATION_ID}.provider",it)
+                    val intent = Intent(Intent.ACTION_SEND)
+                    intent.type = "image/jpg"
+                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    intent.addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
+                    intent.putExtra(Intent.EXTRA_STREAM, photoUri)
+                    intent.putExtra(Intent.EXTRA_TEXT,"Found some amazing Wallpapers from this platform\n\nYou can also give it a try by downloading it from here\nWallstick Application:\nhttps://play.google.com/store/apps/details?id=${BuildConfig.APPLICATION_ID}")
+                    progressDialog.dismiss()
+                    resultLauncher.launch(Intent.createChooser(intent,"Share Image"))
+                    file = "$fileName.jpg"
+                }
+            }
+        }catch (e: Exception){
+            e.printStackTrace()
+            progressDialog.dismiss()
+        }
     }
 
     private fun saveImageToExternalStorage(bitmap: Bitmap) {
@@ -171,41 +313,47 @@ class SetWallpaper : Fragment(){
     }
 
     private fun requestPermission(){
-        val isReadPermission = ContextCompat.checkSelfPermission(
-            requireContext(),
-            Manifest.permission.READ_EXTERNAL_STORAGE
-        ) == PackageManager.PERMISSION_DENIED
+//        val isReadPermission = ContextCompat.checkSelfPermission(
+//            requireContext(),
+//            Manifest.permission.READ_EXTERNAL_STORAGE
+//        ) == PackageManager.PERMISSION_DENIED
 
         val isWritePermission = ContextCompat.checkSelfPermission(
             requireContext(),
             Manifest.permission.WRITE_EXTERNAL_STORAGE
-        ) == PackageManager.PERMISSION_DENIED
+        ) == PackageManager.PERMISSION_GRANTED
 
-        isReadPermissionGranted = isReadPermission
+//        isReadPermissionGranted = isReadPermission
         isWritePermissionGranted = isWritePermission || sdkCheck()
 
         val permissionRequest = mutableListOf<String>()
         if (!isWritePermissionGranted){
             permissionRequest.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
         }
-        if (!isReadPermissionGranted){
-            permissionRequest.add(Manifest.permission.READ_EXTERNAL_STORAGE)
-        }
+//        if (!isReadPermissionGranted){
+//            permissionRequest.add(Manifest.permission.READ_EXTERNAL_STORAGE)
+//        }
         if (permissionRequest.isNotEmpty()){
-            permissionLauncher.launch(permissionRequest.toTypedArray())
+            permissionLauncher.launch(WRITE_EXTERNAL_STORAGE)
         }
     }
 
-    fun toggleFavourite(latestPhoto: LatestPhoto){
+    fun toggleFavourite(latestPhoto: LatestPhoto,isFavourite: Boolean){
         val updatePhoto = LatestPhoto(
             photoId = latestPhoto.photoId,
             previewUrl = latestPhoto.previewUrl,
             originalUrl = latestPhoto.originalUrl,
-            isFavourite = !latestPhoto.isFavourite,
+            isFavourite = isFavourite,
             isLatest = latestPhoto.isLatest,
             isTrending = latestPhoto.isTrending,
             tagList = latestPhoto.tagList
         )
+        currentPhoto = updatePhoto
+//        val currentFavourite = PhotosAdapter.oldLatestPhotoList.find { it.photoId == latestPhoto.photoId }?.isFavourite
+//        PhotosAdapter.oldLatestPhotoList.find { it.photoId == latestPhoto.photoId }?.isFavourite = !currentFavourite!!
+//        val currentFavourite = PhotosAdapter.oldLatestPhotoList[Utils.currentIndex].isFavourite
+//        PhotosAdapter.oldLatestPhotoList[Utils.currentIndex].isFavourite = !currentFavourite
+//        LatestFragment.adapter.notifyItemChanged(Utils.currentIndex)
         mPhotoViewModel.updateLatestPhoto(updatePhoto)
     }
 

@@ -25,8 +25,8 @@ class AppPref(context: Context) {
         prefEditor.putString(key, value).apply()
     }
 
-    fun getBoolean(key: String): Boolean {
-        return appSharedPref.getBoolean(key, false)
+    fun getBoolean(key: String, defValue: Boolean): Boolean {
+        return appSharedPref.getBoolean(key, defValue)
     }
 
     fun setBoolean(key: String?, value: Boolean) {
@@ -43,6 +43,7 @@ class AppPref(context: Context) {
         lateinit var prefEditor: SharedPreferences.Editor
         const val LATEST_CURRENT_PAGE = "LATEST_CURRENT_PAGE"
         const val LATEST_CURRENT_PER_PAGE = "LATEST_CURRENT_PER_PAGE"
+        const val IS_FIRST_OPEN = "IS_FIRST_OPEN"
         const val TRENDING_CURRENT_PAGE = "TRENDING_CURRENT_PAGE"
         const val TRENDING_CURRENT_PER_PAGE = "TRENDING_CURRENT_PER_PAGE"
     }

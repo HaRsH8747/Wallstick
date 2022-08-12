@@ -13,7 +13,7 @@ import com.wallstick.fragment.TrendingFragment
 class ViewPagerAdapter(fragmentManager: FragmentManager, lifecycle: Lifecycle, var tvTitle: TextView) : FragmentStateAdapter(fragmentManager,lifecycle){
 
     override fun getItemCount(): Int {
-        return 4
+        return 3
     }
 
     override fun createFragment(position: Int): Fragment {
@@ -27,9 +27,9 @@ class ViewPagerAdapter(fragmentManager: FragmentManager, lifecycle: Lifecycle, v
             2 -> {
                 FavouriteFragment()
             }
-            3 -> {
-                SearchFragment()
-            }
+//            3 -> {
+//                SearchFragment()
+//            }
             else -> {
                 LatestFragment()
             }

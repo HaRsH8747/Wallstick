@@ -1,7 +1,7 @@
 package com.wallstick.utils
 
+import com.wallstick.BuildConfig
 import com.wallstick.database.LatestPhoto
-import com.wallstick.database.TrendingPhoto
 import com.wallstick.models.flickr.FlickrResponse
 import com.wallstick.models.pixabay.PixabayResponse
 
@@ -12,8 +12,9 @@ class Utils {
         const val PIXABAY_URL = "https://pixabay.com/"
         lateinit var flickrResponse: FlickrResponse
         lateinit var pixabayResponse: PixabayResponse
-        lateinit var currentLatestPhoto: LatestPhoto
-        lateinit var currentTrendingPhoto: TrendingPhoto
+        lateinit var currentPhoto: LatestPhoto
         lateinit var currentTrendingTag: String
+        var currentIndex: Int = 0
+        val API_KEY = BuildConfig.API_KEY
     }
 }

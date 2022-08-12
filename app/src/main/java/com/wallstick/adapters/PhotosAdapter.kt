@@ -2,14 +2,20 @@ package com.wallstick.adapters
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.res.Resources
+import android.graphics.Bitmap
+import android.graphics.drawable.Drawable
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewGroup.MarginLayoutParams
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.transition.Transition
 import com.wallstick.R
 import com.wallstick.database.LatestPhoto
 import com.wallstick.database.PhotoViewModel
@@ -20,9 +26,14 @@ import com.wallstick.utils.Utils
 class PhotosAdapter(
     val context: Context,
     val mPhotoViewModel: PhotoViewModel,
+    val isFavouriteFragment: Boolean
 ): RecyclerView.Adapter<PhotosAdapter.PhotosViewHolder>() {
 
-    private var oldLatestPhotoList = emptyList<LatestPhoto>()
+    companion object{
+        var oldLatestPhotoList = mutableListOf<LatestPhoto>()
+    }
+    private var insertIndex: Int = 0
+    private lateinit var bitmap: Bitmap
 
     //    var photosListPixabay: PixabayResponse
 //    init {
@@ -46,16 +57,39 @@ class PhotosAdapter(
     override fun onBindViewHolder(holder: PhotosViewHolder, position: Int) {
 //        val item = Utils.flickrResponse.photos.photo[position]
 //        val url = createURL(item.farm,item.id,i   tem.secret)
+
         val photo = oldLatestPhotoList[position]
-        if (photo.isFavourite){
-            Log.d("CLEAR","pos $position")
-            holder.photoItemBinding.ivFavourite.setImageResource(R.drawable.heart)
+        if (isFavouriteFragment){
+            holder.photoItemBinding.ivFavourite.visibility = View.VISIBLE
+            if (photo.isFavourite){
+                Log.d("CLEAR","pos $position")
+                holder.photoItemBinding.ivFavourite.setImageResource(R.drawable.heart)
+            }
+        }else{
+            holder.photoItemBinding.ivFavourite.visibility = View.GONE
         }
+
+        if (position % 2 == 0){
+            setMargins(holder.photoItemBinding.cvWallpaper,getDp(15),getDp(15),getDp(0),getDp(15))
+        }else{
+            setMargins(holder.photoItemBinding.cvWallpaper,getDp(0),getDp(15),getDp(15),getDp(15))
+        }
+        holder.photoItemBinding.lavImageLoading.playAnimation()
         Glide.with(context)
+            .asBitmap()
             .load(photo.previewUrl)
             .placeholder(R.drawable.app_logo)
             .error(R.drawable.close)
-            .into(holder.photoItemBinding.ivPhoto)
+            .into(object: CustomTarget<Bitmap>() {
+                override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
+                    bitmap = resource
+                    holder.photoItemBinding.ivPhoto.setImageBitmap(resource)
+                    holder.photoItemBinding.lavImageLoading.pauseAnimation()
+                    holder.photoItemBinding.lavImageLoading.visibility = View.GONE
+                }
+
+                override fun onLoadCleared(placeholder: Drawable?) {}
+            })
 //        Picasso.get().load(photo.previewUrl)
 //            .placeholder(R.drawable.app_logo)
 //            .error(R.drawable.close)
@@ -63,15 +97,18 @@ class PhotosAdapter(
 //            .centerCrop()
 //            .into(holder.photoItemBinding.ivPhoto)
         holder.photoItemBinding.ivFavourite.setOnClickListener {
-            if (photo.isFavourite){
-                holder.photoItemBinding.ivFavourite.setImageResource(R.drawable.heart_outline)
-            }else{
-                holder.photoItemBinding.ivFavourite.setImageResource(R.drawable.heart)
-            }
+            Log.d("CLEAR","clicked pos $position")
             toggleFavourite(photo)
+            notifyItemChanged(position)
+//            if (photo.isFavourite){
+//                holder.photoItemBinding.ivFavourite.setImageResource(R.drawable.heart_outline)
+//            }else{
+//                holder.photoItemBinding.ivFavourite.setImageResource(R.drawable.heart)
+//            }
         }
         holder.photoItemBinding.cvWallpaper.setOnClickListener { v ->
-            Utils.currentLatestPhoto = photo
+            Utils.currentPhoto = photo
+            Utils.currentIndex = position
             try {
                 v.findNavController().navigate(R.id.action_wallpaperFragment_to_setWallpaper)
             }catch (e: IllegalArgumentException){
@@ -87,8 +124,21 @@ class PhotosAdapter(
 //        }
     }
 
+
     override fun getItemCount(): Int {
         return oldLatestPhotoList.size
+    }
+
+    fun getDp(i: Int): Int{
+        return (i * Resources.getSystem().displayMetrics.density + 0.5F).toInt()
+    }
+
+    fun setMargins(v: View, l: Int, t: Int, r: Int, b: Int) {
+        if (v.layoutParams is MarginLayoutParams) {
+            val p = v.layoutParams as MarginLayoutParams
+            p.setMargins(l, t, r, b)
+            v.requestLayout()
+        }
     }
 
     private fun createURL(farm: Int, id: String, secret: String): String{
@@ -98,12 +148,17 @@ class PhotosAdapter(
     @SuppressLint("NotifyDataSetChanged")
     fun setData(newLatestPhotoList: List<LatestPhoto>, fromSearch: Boolean){
         if (fromSearch){
-            this.oldLatestPhotoList = newLatestPhotoList
-            notifyDataSetChanged()
+            insertIndex = oldLatestPhotoList.size
+            Log.d("CLEAR","insertIndex: $insertIndex, oldsize: ${oldLatestPhotoList.size}")
+            oldLatestPhotoList.clear()
+            oldLatestPhotoList.addAll(newLatestPhotoList)
+            notifyItemRangeInserted(insertIndex,oldLatestPhotoList.size)
+//            notifyDataSetChanged()
         }else{
             val diffUtil = LatestDiffUtil(oldLatestPhotoList, newLatestPhotoList)
             val diffResults = DiffUtil.calculateDiff(diffUtil)
-            oldLatestPhotoList = newLatestPhotoList
+            oldLatestPhotoList = newLatestPhotoList.toMutableList()
+//            oldLatestPhotoList.addAll(newLatestPhotoList)
             diffResults.dispatchUpdatesTo(this)
         }
 //        this.oldLatestPhotoList = newLatestPhotoList
@@ -120,6 +175,8 @@ class PhotosAdapter(
             isTrending = latestPhoto.isTrending,
             tagList = latestPhoto.tagList
         )
+//        val currentFav = oldLatestPhotoList.find { it.photoId == latestPhoto.photoId }?.isFavourite
+//        oldLatestPhotoList.find { it.photoId == latestPhoto.photoId }?.isFavourite = !currentFav!!
         mPhotoViewModel.updateLatestPhoto(updatePhoto)
     }
 }
